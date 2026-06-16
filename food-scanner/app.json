@@ -34,6 +34,13 @@
             "imageWidth": 76
           }
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Food Scanner to access your photos so you can scan food.",
+          "cameraPermission": "Allow Food Scanner to use the camera to take photos of food."
+        }
       ]
     ],
     "experiments": {
