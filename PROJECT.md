@@ -30,16 +30,18 @@ Target audience: demo / portfolio. Code should be **readable and explainable**, 
 
 | Concern | Choice | Notes |
 |---|---|---|
-| Framework | React Native + Expo (SDK 56) | Managed workflow |
+| Framework | React Native + Expo (**SDK 54**) | Managed workflow. Downgraded from the scaffolded SDK 56 to match Expo Go (App Store maxes at SDK 54). |
 | Language | TypeScript | Keep types simple; no complex generics |
 | Navigation | Expo Router (file-based) | Screens live in `src/app/` |
-| Camera | `expo-image-picker` | **Not yet installed** — run `npx expo install expo-image-picker` |
+| Camera | `expo-image-picker` | ✅ Installed |
+| Ring graphic | `react-native-svg` | ✅ Installed — used for the calorie ring |
 | AI | OpenAI `gpt-4o` | Vision-capable; send image as base64 |
 | Env vars | `.env` + `process.env.EXPO_PUBLIC_*` | Key must use the `EXPO_PUBLIC_` prefix to be readable in the app |
 | Styling | React Native `StyleSheet` | No external UI library needed |
 
 > The Expo app lives in the **`food-scanner/`** subfolder. Run all `npx expo` commands from inside it.
-> Expo SDK 56 changed a lot — check the versioned docs at https://docs.expo.dev/versions/v56.0.0/ before writing Expo-specific code.
+> The project runs on **Expo SDK 54** — check the versioned docs at https://docs.expo.dev/versions/v54.0.0/ before writing Expo-specific code.
+> ⚠️ Do NOT upgrade the Expo SDK past 54 — Expo Go can't run a newer SDK.
 
 ---
 
@@ -64,29 +66,30 @@ Respond ONLY with valid JSON in this exact shape:
 If you cannot identify food in the image, return { "error": "Could not identify food." }
 ```
 
-**API call shape:**
+**Implemented in `src/services/openai.ts`** as `analyzeFood(base64)`. It uses
+`response_format: { type: "json_object" }` so the model always returns parseable JSON.
+The service also exports the shared data type both screens use:
+
 ```ts
-const response = await fetch("https://api.openai.com/v1/chat/completions", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${process.env.EXPO_PUBLIC_OPENAI_API_KEY}`,
-  },
-  body: JSON.stringify({
-    model: "gpt-4o",
-    messages: [
-      {
-        role: "user",
-        content: [
-          { type: "text", text: NUTRITION_PROMPT },
-          { type: "image_url", image_url: { url: `data:image/jpeg;base64,${base64}` } },
-        ],
-      },
-    ],
-    max_tokens: 500,
-  }),
-});
+export type FoodResult = {
+  food: string;
+  calories: number;
+  macros: { protein_g: number; carbs_g: number; fat_g: number };
+  recipes: string[];
+};
+
+export async function analyzeFood(base64: string): Promise<FoodResult>;
 ```
+
+### The contract between the two screens
+Home screen (Track A) calls `analyzeFood`, then navigates passing the result as a JSON string:
+
+```ts
+const result = await analyzeFood(base64);
+router.push({ pathname: '/result', params: { data: JSON.stringify(result) } });
+```
+
+Result screen (Track B) reads `params.data` and parses it back into a `FoodResult`.
 
 ---
 
@@ -95,14 +98,15 @@ const response = await fetch("https://api.openai.com/v1/chat/completions", {
 Inspired by a clean calorie-tracker dashboard reference. Borrow the *aesthetic*, not the
 full dashboard widgets (no steps/water/weekly-chart — our app is just scan → result).
 
-**Palette**
+**Palette** (defined in `src/constants/colors.ts` as `AppColors`)
 | Token | Color | Use |
 |---|---|---|
-| Primary green | `#4CAF50` (approx) | Top bar, calorie ring, accents |
-| Stat blue | `#2D7FF9` (approx) | Numbers (calories, macros) |
-| Background | `#F2F4F7` light gray | Screen background |
-| Card | `#FFFFFF` | Rounded white cards with soft shadow |
-| Text | `#1A1A1A` / gray `#8A8A8A` | Headings / labels |
+| Primary green | `#43b649` | Top bar, calorie ring, accents |
+| Stat blue | `#2f7bd6` | Numbers (calories, macros) |
+| Background | `#eceef1` light gray | Screen background |
+| Card | `#ffffff` | Rounded white cards with soft shadow |
+| Text / muted | `#1a1a1a` / `#9aa0a6` | Headings / labels |
+| Orange | `#f08a24` | "RECIPES" label |
 
 **Visual language**
 - White rounded cards (border-radius ~16, soft shadow) on a light gray background.
@@ -135,18 +139,36 @@ Result (result.tsx)
 
 ## File Responsibilities
 
-All app code lives under `food-scanner/src/`.
+All app code lives under `food-scanner/src/`. Work is split into two tracks
+(see "Work Split" below). File names use kebab-case to match the Expo template.
 
-| File | Responsibility | Exists? |
-|---|---|---|
-| `src/app/index.tsx` | Camera/picker UI, triggers API call, handles loading/error states | ✅ (from template — needs rewrite) |
-| `src/app/result.tsx` | Receives navigation params, renders results | ❌ to create |
-| `src/components/FoodCard.tsx` | Displays food name, calorie count, and macros | ❌ to create |
-| `src/components/RecipeList.tsx` | Renders a list of recipe name strings | ❌ to create |
-| `src/services/openai.ts` | `analyzeFood(base64: string)` — the only place OpenAI is called | ❌ to create |
-| `src/constants/prompts.ts` | Exports `NUTRITION_PROMPT` string | ❌ to create |
-| `.env` | `EXPO_PUBLIC_OPENAI_API_KEY=sk-...` (git-ignored) | ✅ created |
-| `.env.example` | Safe template committed to git | ✅ created |
+| File | Responsibility | Track | Exists? |
+|---|---|---|---|
+| `src/app/index.tsx` | Camera/picker UI, triggers API call, handles loading/error states | A | ⬜ template default — needs rewrite |
+| `src/app/result.tsx` | Receives navigation params, renders results | B | ✅ done |
+| `src/components/calorie-ring.tsx` | SVG calorie ring (hero element) | B | ✅ done |
+| `src/components/food-card.tsx` | Food name + ring + macro stats | B | ✅ done |
+| `src/components/recipe-list.tsx` | Renders the recipe name list | B | ✅ done |
+| `src/services/openai.ts` | `analyzeFood(base64)` + the `FoodResult` type — only place OpenAI is called | B | ✅ done |
+| `src/constants/prompts.ts` | Exports `NUTRITION_PROMPT` string | B | ✅ done |
+| `src/constants/colors.ts` | `AppColors` palette | B | ✅ done |
+| `.env` | `EXPO_PUBLIC_OPENAI_API_KEY=sk-...` (git-ignored) | — | ✅ created |
+| `.env.example` | Safe template committed to git | — | ✅ created |
+
+---
+
+## Work Split
+
+**Track A — Camera + App shell**
+- Rewrite `src/app/index.tsx`: "Take Photo" / "Choose from Library" buttons via
+  `expo-image-picker` (request `base64: true`), photo preview, loading + error states.
+- Call `analyzeFood(base64)` from `@/services/openai`, then navigate to `/result`
+  passing `data: JSON.stringify(result)` (see "The contract" above).
+
+**Track B — AI + Results UI** (done)
+- `services/openai.ts`, `constants/prompts.ts`, `constants/colors.ts`,
+  `components/calorie-ring.tsx`, `components/food-card.tsx`, `components/recipe-list.tsx`,
+  `app/result.tsx`.
 
 ---
 
@@ -163,8 +185,9 @@ All app code lives under `food-scanner/src/`.
 
 ## Conventions
 
-- File names: `PascalCase` for components, `camelCase` for services/constants.
-- Keep each component under ~80 lines.
+- File names: **kebab-case** for everything (e.g. `calorie-ring.tsx`) to match the Expo template.
+- Import with the `@/` alias (e.g. `import { AppColors } from '@/constants/colors'`).
+- Keep each component small and focused.
 - Use `async/await`, not `.then()` chains.
 - All API errors should surface a user-friendly message on screen, not just `console.error`.
 
@@ -183,9 +206,10 @@ All app code lives under `food-scanner/src/`.
 
 - [x] Project initialized (`npx create-expo-app` → `food-scanner/`)
 - [x] `.env` + `.env.example` created, `.gitignore` hardened
-- [ ] `expo-image-picker` installed (`npx expo install expo-image-picker`)
-- [ ] `src/services/openai.ts` written and tested
-- [ ] `src/constants/prompts.ts` created
-- [ ] Home screen UI (rewrite `src/app/index.tsx`)
-- [ ] Result screen UI (`src/app/result.tsx`)
+- [x] Downgraded to Expo SDK 54 (matches Expo Go)
+- [x] `expo-image-picker` + `react-native-svg` installed
+- [x] **Track B done:** OpenAI service, prompt, colors, result screen + components
+- [ ] **Track A:** Home screen rewrite (`src/app/index.tsx`) — camera/picker + navigate to result
+- [ ] Rotate the OpenAI API key (was shared in chat)
+- [ ] End-to-end test: photo → real API call → result screen
 - [ ] Demo walkthrough rehearsed

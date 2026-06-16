@@ -17,34 +17,37 @@ A React Native / Expo mobile app that uses the OpenAI Vision API to identify foo
 
 | Layer | Technology |
 |---|---|
-| Mobile app | React Native + Expo (SDK 56), TypeScript |
+| Mobile app | React Native + Expo (SDK 54), TypeScript |
 | AI | OpenAI API — `gpt-4o` with vision |
 | Camera | `expo-image-picker` |
+| Ring graphic | `react-native-svg` |
 | Networking | `fetch` |
 | State | React `useState` |
 | Styling | React Native StyleSheet |
 
 ---
 
-## Project Structure (planned)
+## Project Structure
 
 ```
-food-scanner/              # the Expo app (run npx commands from here)
+food-scanner/                  # the Expo app (run npx commands from here)
 ├── src/
-│   ├── app/               # Expo Router screens (file-based routing)
-│   │   ├── index.tsx      # Home / camera screen
-│   │   └── result.tsx     # Nutrition results screen
+│   ├── app/                   # Expo Router screens (file-based routing)
+│   │   ├── index.tsx          # Home / camera screen (Track A — in progress)
+│   │   └── result.tsx         # Nutrition results screen (done)
 │   ├── components/
-│   │   ├── FoodCard.tsx   # Displays identified food + calories
-│   │   └── RecipeList.tsx # Recipe suggestions
+│   │   ├── calorie-ring.tsx   # SVG calorie ring (hero element)
+│   │   ├── food-card.tsx      # Food name + ring + macros
+│   │   └── recipe-list.tsx    # Recipe suggestions
 │   ├── services/
-│   │   └── openai.ts      # OpenAI API call (image → nutrition)
+│   │   └── openai.ts          # analyzeFood() + FoodResult type
 │   └── constants/
-│       └── prompts.ts     # System prompt sent to GPT-4o
-├── assets/                # Icons, splash screen
-├── .env                   # EXPO_PUBLIC_OPENAI_API_KEY (git-ignored)
-├── .env.example           # Safe template (committed)
-├── app.json               # Expo config
+│       ├── prompts.ts         # System prompt sent to GPT-4o
+│       └── colors.ts          # AppColors palette
+├── assets/                    # Icons, splash screen
+├── .env                       # EXPO_PUBLIC_OPENAI_API_KEY (git-ignored)
+├── .env.example               # Safe template (committed)
+├── app.json                   # Expo config
 └── package.json
 ```
 
