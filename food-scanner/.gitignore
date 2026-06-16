@@ -30,8 +30,10 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
+# env files — NEVER commit these (they hold your API key)
+.env
+.env.*
+!.env.example
 
 # typescript
 *.tsbuildinfo

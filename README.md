@@ -17,11 +17,11 @@ A React Native / Expo mobile app that uses the OpenAI Vision API to identify foo
 
 | Layer | Technology |
 |---|---|
-| Mobile app | React Native + Expo (SDK 51+) |
+| Mobile app | React Native + Expo (SDK 56), TypeScript |
 | AI | OpenAI API — `gpt-4o` with vision |
-| Camera | `expo-camera` / `expo-image-picker` |
-| Networking | `fetch` / `axios` |
-| State | React `useState` / `useContext` |
+| Camera | `expo-image-picker` |
+| Networking | `fetch` |
+| State | React `useState` |
 | Styling | React Native StyleSheet |
 
 ---
@@ -29,20 +29,22 @@ A React Native / Expo mobile app that uses the OpenAI Vision API to identify foo
 ## Project Structure (planned)
 
 ```
-seo/
-├── app/                  # Expo Router screens
-│   ├── index.tsx         # Home / camera screen
-│   └── result.tsx        # Nutrition results screen
-├── components/
-│   ├── FoodCard.tsx      # Displays identified food + calories
-│   └── RecipeList.tsx    # Scrollable recipe suggestions
-├── services/
-│   └── openai.ts         # OpenAI API calls (image → nutrition)
-├── constants/
-│   └── prompts.ts        # System prompts sent to GPT-4o
-├── assets/               # Icons, splash screen
-├── .env                  # OPENAI_API_KEY (never committed)
-├── app.json              # Expo config
+food-scanner/              # the Expo app (run npx commands from here)
+├── src/
+│   ├── app/               # Expo Router screens (file-based routing)
+│   │   ├── index.tsx      # Home / camera screen
+│   │   └── result.tsx     # Nutrition results screen
+│   ├── components/
+│   │   ├── FoodCard.tsx   # Displays identified food + calories
+│   │   └── RecipeList.tsx # Recipe suggestions
+│   ├── services/
+│   │   └── openai.ts      # OpenAI API call (image → nutrition)
+│   └── constants/
+│       └── prompts.ts     # System prompt sent to GPT-4o
+├── assets/                # Icons, splash screen
+├── .env                   # EXPO_PUBLIC_OPENAI_API_KEY (git-ignored)
+├── .env.example           # Safe template (committed)
+├── app.json               # Expo config
 └── package.json
 ```
 
@@ -60,13 +62,19 @@ seo/
 ## Getting Started
 
 ```bash
-# 1. Install dependencies
+# 1. Move into the app folder
+cd food-scanner
+
+# 2. Install dependencies
 npm install
 
-# 2. Add your OpenAI key
-echo "OPENAI_API_KEY=sk-..." > .env
+# 3. Add your OpenAI key
+cp .env.example .env        # then paste your real key into .env
 
-# 3. Start Expo dev server
+# 4. Install the camera library
+npx expo install expo-image-picker
+
+# 5. Start Expo dev server
 npx expo start
 ```
 
@@ -78,9 +86,9 @@ Scan the QR code with **Expo Go** on your phone.
 
 | Variable | Description |
 |---|---|
-| `OPENAI_API_KEY` | Your OpenAI secret key (get from platform.openai.com) |
+| `EXPO_PUBLIC_OPENAI_API_KEY` | Your OpenAI secret key (get from platform.openai.com). The `EXPO_PUBLIC_` prefix is required for Expo to read it. |
 
-Never commit `.env` to git.
+`.env` is git-ignored and never committed. Only `.env.example` (a placeholder) is tracked.
 
 ---
 

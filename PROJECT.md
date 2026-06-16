@@ -30,12 +30,16 @@ Target audience: demo / portfolio. Code should be **readable and explainable**, 
 
 | Concern | Choice | Notes |
 |---|---|---|
-| Framework | React Native + Expo (SDK 51+) | Managed workflow |
-| Navigation | Expo Router (file-based) | Screens live in `app/` |
-| Camera | `expo-image-picker` | Simplest API for camera + gallery |
+| Framework | React Native + Expo (SDK 56) | Managed workflow |
+| Language | TypeScript | Keep types simple; no complex generics |
+| Navigation | Expo Router (file-based) | Screens live in `src/app/` |
+| Camera | `expo-image-picker` | **Not yet installed** — run `npx expo install expo-image-picker` |
 | AI | OpenAI `gpt-4o` | Vision-capable; send image as base64 |
-| Env vars | `expo-constants` + `.env` | Use `process.env.EXPO_PUBLIC_*` prefix |
+| Env vars | `.env` + `process.env.EXPO_PUBLIC_*` | Key must use the `EXPO_PUBLIC_` prefix to be readable in the app |
 | Styling | React Native `StyleSheet` | No external UI library needed |
+
+> The Expo app lives in the **`food-scanner/`** subfolder. Run all `npx expo` commands from inside it.
+> Expo SDK 56 changed a lot — check the versioned docs at https://docs.expo.dev/versions/v56.0.0/ before writing Expo-specific code.
 
 ---
 
@@ -105,15 +109,18 @@ Result (result.tsx)
 
 ## File Responsibilities
 
-| File | Responsibility |
-|---|---|
-| `app/index.tsx` | Camera/picker UI, triggers API call, handles loading/error states |
-| `app/result.tsx` | Receives navigation params, renders results |
-| `components/FoodCard.tsx` | Displays food name, calorie count, and macros |
-| `components/RecipeList.tsx` | Renders a list of recipe name strings |
-| `services/openai.ts` | `analyzeFood(base64: string)` — the only place OpenAI is called |
-| `constants/prompts.ts` | Exports `NUTRITION_PROMPT` string |
-| `.env` | `EXPO_PUBLIC_OPENAI_API_KEY=sk-...` |
+All app code lives under `food-scanner/src/`.
+
+| File | Responsibility | Exists? |
+|---|---|---|
+| `src/app/index.tsx` | Camera/picker UI, triggers API call, handles loading/error states | ✅ (from template — needs rewrite) |
+| `src/app/result.tsx` | Receives navigation params, renders results | ❌ to create |
+| `src/components/FoodCard.tsx` | Displays food name, calorie count, and macros | ❌ to create |
+| `src/components/RecipeList.tsx` | Renders a list of recipe name strings | ❌ to create |
+| `src/services/openai.ts` | `analyzeFood(base64: string)` — the only place OpenAI is called | ❌ to create |
+| `src/constants/prompts.ts` | Exports `NUTRITION_PROMPT` string | ❌ to create |
+| `.env` | `EXPO_PUBLIC_OPENAI_API_KEY=sk-...` (git-ignored) | ✅ created |
+| `.env.example` | Safe template committed to git | ✅ created |
 
 ---
 
@@ -137,12 +144,22 @@ Result (result.tsx)
 
 ---
 
+## Security
+
+- The API key lives ONLY in `food-scanner/.env`, which is git-ignored.
+- Never paste the key into chat, commits, or screenshots.
+- ⚠️ The current key was shared in chat once — **rotate it** at https://platform.openai.com/api-keys and paste the new one into `.env` directly.
+- Set a low monthly usage limit on the OpenAI dashboard so a leaked key can't cause large charges.
+
+---
+
 ## Current Status
 
-- [ ] Project initialized (`npx create-expo-app`)
-- [ ] Folder structure created
-- [ ] `expo-image-picker` installed and configured
-- [ ] `services/openai.ts` written and tested
-- [ ] Home screen UI complete
-- [ ] Result screen UI complete
+- [x] Project initialized (`npx create-expo-app` → `food-scanner/`)
+- [x] `.env` + `.env.example` created, `.gitignore` hardened
+- [ ] `expo-image-picker` installed (`npx expo install expo-image-picker`)
+- [ ] `src/services/openai.ts` written and tested
+- [ ] `src/constants/prompts.ts` created
+- [ ] Home screen UI (rewrite `src/app/index.tsx`)
+- [ ] Result screen UI (`src/app/result.tsx`)
 - [ ] Demo walkthrough rehearsed
