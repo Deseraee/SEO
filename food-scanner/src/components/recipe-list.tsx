@@ -1,11 +1,13 @@
-// The "FAST & EASY RECIPES" card — a simple list of recipe name strings.
+// The "FAST & EASY RECIPES" card. Each recipe shows its name, a short
+// description, and small meta chips (time, calories, difficulty).
 
 import { StyleSheet, Text, View } from 'react-native';
 
 import { AppColors } from '@/constants/colors';
+import type { Recipe } from '@/services/openai';
 
 type Props = {
-  recipes: string[];
+  recipes: Recipe[];
 };
 
 export function RecipeList({ recipes }: Props) {
@@ -16,12 +18,27 @@ export function RecipeList({ recipes }: Props) {
 
       <View style={styles.list}>
         {recipes.map((recipe, index) => (
-          <View key={index} style={styles.row}>
-            <View style={styles.dot} />
-            <Text style={styles.recipe}>{recipe}</Text>
+          <View key={index} style={styles.recipe}>
+            <Text style={styles.name}>{recipe.name}</Text>
+            <Text style={styles.description}>{recipe.description}</Text>
+
+            <View style={styles.chips}>
+              <Chip label={`${recipe.time_minutes} min`} />
+              <Chip label={`${recipe.calories} cal`} />
+              <Chip label={recipe.difficulty} />
+            </View>
           </View>
         ))}
       </View>
+    </View>
+  );
+}
+
+// A small rounded label for a single piece of recipe metadata.
+function Chip({ label }: { label: string }) {
+  return (
+    <View style={styles.chip}>
+      <Text style={styles.chipText}>{label}</Text>
     </View>
   );
 }
@@ -31,7 +48,6 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.card,
     borderRadius: 18,
     padding: 20,
-    gap: 4,
     shadowColor: '#000',
     shadowOpacity: 0.06,
     shadowRadius: 18,
@@ -49,24 +65,42 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: AppColors.orange,
     letterSpacing: 1,
-    marginBottom: 8,
+    marginBottom: 16,
   },
   list: {
-    gap: 12,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: AppColors.green,
+    gap: 16,
   },
   recipe: {
-    fontSize: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f1f3',
+    paddingTop: 14,
+    gap: 6,
+  },
+  name: {
+    fontSize: 17,
+    fontWeight: '700',
     color: AppColors.text,
+  },
+  description: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: AppColors.muted,
+  },
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 4,
+  },
+  chip: {
+    backgroundColor: AppColors.greenSoft,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  chipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: AppColors.green,
   },
 });

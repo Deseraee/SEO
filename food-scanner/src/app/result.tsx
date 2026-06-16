@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FoodCard } from '@/components/food-card';
 import { RecipeList } from '@/components/recipe-list';
+import { WeekTracker } from '@/components/week-tracker';
 import { AppColors } from '@/constants/colors';
 import type { FoodResult } from '@/services/openai';
 
@@ -31,9 +32,13 @@ export default function ResultScreen() {
   const result: FoodResult = JSON.parse(data);
 
   return (
-    <SafeAreaView style={styles.safe} edges={['bottom']}>
-      <ScrollView contentContainerStyle={styles.content}>
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}>
+        <Text style={styles.header}>Nutrition</Text>
         <FoodCard result={result} />
+        <WeekTracker />
         <RecipeList recipes={result.recipes} />
         <ScanAgainButton />
       </ScrollView>
@@ -57,7 +62,15 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 16,
+    paddingBottom: 32,
     gap: 16,
+  },
+  header: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: AppColors.text,
+    marginBottom: 4,
+    marginLeft: 4,
   },
   empty: {
     flex: 1,

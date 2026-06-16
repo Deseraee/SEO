@@ -13,11 +13,20 @@ export type Macros = {
   fat_g: number;
 };
 
+// A single recipe with enough detail to show a useful card.
+export type Recipe = {
+  name: string;
+  description: string;   // 1-2 sentence summary of the dish
+  time_minutes: number;  // rough total cook + prep time
+  calories: number;      // approx calories per serving
+  difficulty: string;    // "Easy" | "Medium" | "Hard"
+};
+
 export type FoodResult = {
   food: string;
   calories: number;
   macros: Macros;
-  recipes: string[];
+  recipes: Recipe[];
 };
 
 // The API key comes from the .env file. The EXPO_PUBLIC_ prefix is required

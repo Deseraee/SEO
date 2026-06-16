@@ -12,7 +12,16 @@ Respond ONLY with valid JSON in this exact shape:
     "carbs_g": number,
     "fat_g": number
   },
-  "recipes": ["recipe name 1", "recipe name 2", "recipe name 3"]
+  "recipes": [
+    {
+      "name": "string - recipe name",
+      "description": "string - one or two sentences describing the dish",
+      "time_minutes": number - approximate total time to make it,
+      "calories": number - approximate calories per serving,
+      "difficulty": "Easy" | "Medium" | "Hard"
+    }
+  ]
 }
+Give exactly 3 recipes that feature the identified food.
 If you cannot identify any food in the image, return:
 { "error": "Could not identify food." }`;
