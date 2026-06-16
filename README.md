@@ -1,4 +1,4 @@
-# NutriSnap — AI Food Nutrition Scanner
+# SEO — AI Food Nutrition Scanner
 
 A React Native / Expo mobile app that uses the OpenAI Vision API to identify food from photos, return calorie counts, and suggest recipes.
 
@@ -29,7 +29,7 @@ A React Native / Expo mobile app that uses the OpenAI Vision API to identify foo
 ## Project Structure (planned)
 
 ```
-nutrisnap/
+seo/
 ├── app/                  # Expo Router screens
 │   ├── index.tsx         # Home / camera screen
 │   └── result.tsx        # Nutrition results screen

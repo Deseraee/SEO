@@ -1,4 +1,4 @@
-# CLAUDE.md — AI Build Reference for NutriSnap
+# PROJECT.md — AI Build Reference
 
 This file is the authoritative reference for how Claude should help build this project.
 Read this before generating any code.
@@ -7,7 +7,7 @@ Read this before generating any code.
 
 ## Project Summary
 
-**NutriSnap** is a React Native / Expo demo app that:
+This is a React Native / Expo demo app that:
 1. Lets the user take or upload a photo of food.
 2. Sends the image to OpenAI GPT-4o Vision.
 3. Displays: identified food name, estimated calories, macros, and recipe ideas.
