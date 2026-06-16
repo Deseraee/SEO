@@ -90,6 +90,32 @@ const response = await fetch("https://api.openai.com/v1/chat/completions", {
 
 ---
 
+## Design / Visual Style
+
+Inspired by a clean calorie-tracker dashboard reference. Borrow the *aesthetic*, not the
+full dashboard widgets (no steps/water/weekly-chart — our app is just scan → result).
+
+**Palette**
+| Token | Color | Use |
+|---|---|---|
+| Primary green | `#4CAF50` (approx) | Top bar, calorie ring, accents |
+| Stat blue | `#2D7FF9` (approx) | Numbers (calories, macros) |
+| Background | `#F2F4F7` light gray | Screen background |
+| Card | `#FFFFFF` | Rounded white cards with soft shadow |
+| Text | `#1A1A1A` / gray `#8A8A8A` | Headings / labels |
+
+**Visual language**
+- White rounded cards (border-radius ~16, soft shadow) on a light gray background.
+- Generous whitespace, clean sans-serif (system font is fine).
+- **Calorie ring** — circular progress ring showing the food's calorie count as the
+  hero element (mirrors the apple-ring in the reference). Use `react-native-svg` or a
+  simple styled circle.
+- Macros shown as small labeled stats (protein / carbs / fat) like the reference's
+  side stats.
+- Recipes in a bottom card with a "FAST & EASY RECIPES" style heading.
+
+---
+
 ## Screen Flow
 
 ```
