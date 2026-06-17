@@ -24,9 +24,11 @@ export type Recipe = {
 
 export type FoodResult = {
   food: string;
+  type: 'ingredient' | 'dish';  // is it a raw ingredient or a prepared dish?
   calories: number;
   macros: Macros;
-  recipes: Recipe[];
+  ingredients?: string[];        // present when type === 'dish' (how to make it)
+  recipes?: Recipe[];            // present when type === 'ingredient' (what to make with it)
 };
 
 // The API key comes from the .env file. The EXPO_PUBLIC_ prefix is required

@@ -11,10 +11,22 @@ type Props = {
   result: FoodResult;
 };
 
+// Capitalize the first letter of each word (e.g. "grilled salmon" -> "Grilled Salmon").
+function titleCase(text: string) {
+  return text.replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 export function FoodCard({ result }: Props) {
+  // Label the food as a Dish or an Ingredient.
+  const typeLabel = result.type === 'dish' ? 'Dish' : 'Ingredient';
+
   return (
     <View style={styles.card}>
-      <Text style={styles.foodName}>{result.food}</Text>
+      <Text style={styles.foodName}>{titleCase(result.food)}</Text>
+
+      <View style={styles.typeBadge}>
+        <Text style={styles.typeBadgeText}>{typeLabel}</Text>
+      </View>
 
       <CalorieRing calories={result.calories} />
 
@@ -56,6 +68,20 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: AppColors.text,
     textAlign: 'center',
+  },
+  typeBadge: {
+    backgroundColor: AppColors.greenSoft,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 999,
+    marginTop: -8,
+  },
+  typeBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: AppColors.green,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   macros: {
     flexDirection: 'row',

@@ -10,6 +10,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FoodCard } from '@/components/food-card';
+import { IngredientsList } from '@/components/ingredients-list';
 import { RecipeList } from '@/components/recipe-list';
 import { WeekTracker } from '@/components/week-tracker';
 import { AppColors } from '@/constants/colors';
@@ -39,7 +40,14 @@ export default function ResultScreen() {
         <Text style={styles.header}>Nutrition</Text>
         <FoodCard result={result} />
         <WeekTracker />
-        <RecipeList recipes={result.recipes} />
+
+        {/* A dish shows its ingredients; an ingredient shows recipes to make with it. */}
+        {result.type === 'dish' ? (
+          <IngredientsList ingredients={result.ingredients ?? []} />
+        ) : (
+          <RecipeList recipes={result.recipes ?? []} />
+        )}
+
         <ScanAgainButton />
       </ScrollView>
     </SafeAreaView>
