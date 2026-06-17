@@ -49,37 +49,49 @@ Target audience: demo / portfolio. Code should be **readable and explainable**, 
 
 Images must be sent as base64-encoded data URLs. The call lives in `services/openai.ts`.
 
-**Prompt structure to use:**
+**What the prompt asks for** (full text lives in `src/constants/prompts.ts`):
+The model classifies the photo as an **ingredient** (raw/basic food) or a **dish**
+(prepared meal), writes the name in Title Case, and returns JSON:
+
 ```
-You are a nutrition expert. The user has sent you a photo of food.
-Respond ONLY with valid JSON in this exact shape:
 {
-  "food": "string — name of the food identified",
-  "calories": number — estimated calories per serving,
-  "macros": {
-    "protein_g": number,
-    "carbs_g": number,
-    "fat_g": number
-  },
-  "recipes": ["recipe name 1", "recipe name 2", "recipe name 3"]
+  "food": "Title Case name",
+  "type": "ingredient" | "dish",
+  "calories": number,
+  "macros": { "protein_g": number, "carbs_g": number, "fat_g": number },
+  "ingredients": ["..."],   // ONLY when type is "dish" (how to make it)
+  "recipes": [ {recipe object} ]  // ONLY when type is "ingredient" (what to make with it)
 }
-If you cannot identify food in the image, return { "error": "Could not identify food." }
 ```
+If no food is found it returns `{ "error": "Could not identify food." }`.
 
 **Implemented in `src/services/openai.ts`** as `analyzeFood(base64)`. It uses
 `response_format: { type: "json_object" }` so the model always returns parseable JSON.
-The service also exports the shared data type both screens use:
+The service exports the shared data types both screens use:
 
 ```ts
+export type Recipe = {
+  name: string;
+  description: string;
+  time_minutes: number;
+  calories: number;
+  difficulty: string;       // "Easy" | "Medium" | "Hard"
+};
+
 export type FoodResult = {
   food: string;
+  type: 'ingredient' | 'dish';
   calories: number;
   macros: { protein_g: number; carbs_g: number; fat_g: number };
-  recipes: string[];
+  ingredients?: string[];   // present when type === 'dish'
+  recipes?: Recipe[];       // present when type === 'ingredient'
 };
 
 export async function analyzeFood(base64: string): Promise<FoodResult>;
 ```
+
+The result screen branches on `type`: a **dish** renders `IngredientsList`
+(`ingredients`), an **ingredient** renders `RecipeList` (`recipes`).
 
 ### The contract between the two screens
 Home screen (Track A) calls `analyzeFood`, then navigates passing the result as a JSON string:
@@ -144,13 +156,15 @@ All app code lives under `food-scanner/src/`. Work is split into two tracks
 
 | File | Responsibility | Track | Exists? |
 |---|---|---|---|
-| `src/app/index.tsx` | Camera/picker UI, triggers API call, handles loading/error states | A | ⬜ template default — needs rewrite |
-| `src/app/result.tsx` | Receives navigation params, renders results | B | ✅ done |
+| `src/app/index.tsx` | Camera/picker UI, triggers API call, handles loading/error states | A | ✅ done (camera + library + loading/error) |
+| `src/app/result.tsx` | Renders results; branches on `type` (dish → ingredients, ingredient → recipes) | B | ✅ done |
 | `src/components/calorie-ring.tsx` | SVG calorie ring (hero element) | B | ✅ done |
-| `src/components/food-card.tsx` | Food name + ring + macro stats | B | ✅ done |
-| `src/components/recipe-list.tsx` | Renders the recipe name list | B | ✅ done |
-| `src/services/openai.ts` | `analyzeFood(base64)` + the `FoodResult` type — only place OpenAI is called | B | ✅ done |
-| `src/constants/prompts.ts` | Exports `NUTRITION_PROMPT` string | B | ✅ done |
+| `src/components/food-card.tsx` | Title-cased name + type badge + ring + macro stats | B | ✅ done |
+| `src/components/recipe-list.tsx` | Recipe cards (name, description, time/cal/difficulty chips) | B | ✅ done |
+| `src/components/ingredients-list.tsx` | Ingredient list shown for dishes | B | ✅ done |
+| `src/components/week-tracker.tsx` | Synthetic weekly calorie bar chart | B | ✅ done |
+| `src/services/openai.ts` | `analyzeFood(base64)` + `FoodResult`/`Recipe` types — only place OpenAI is called | B | ✅ done |
+| `src/constants/prompts.ts` | Exports `NUTRITION_PROMPT` (classifies ingredient vs dish) | B | ✅ done |
 | `src/constants/colors.ts` | `AppColors` palette | B | ✅ done |
 | `.env` | `EXPO_PUBLIC_OPENAI_API_KEY=sk-...` (git-ignored) | — | ✅ created |
 | `.env.example` | Safe template committed to git | — | ✅ created |
@@ -159,11 +173,11 @@ All app code lives under `food-scanner/src/`. Work is split into two tracks
 
 ## Work Split
 
-**Track A — Camera + App shell**
-- Rewrite `src/app/index.tsx`: "Take Photo" / "Choose from Library" buttons via
-  `expo-image-picker` (request `base64: true`), photo preview, loading + error states.
-- Call `analyzeFood(base64)` from `@/services/openai`, then navigate to `/result`
-  passing `data: JSON.stringify(result)` (see "The contract" above).
+**Track A — Camera + App shell** (done)
+- `src/app/index.tsx`: "Take Photo" / "Choose from Library" via `expo-image-picker`
+  (`base64: true`), photo preview, loading overlay, and error handling.
+- Calls `analyzeFood(base64)` then navigates to `/result` with `data: JSON.stringify(result)`.
+- Camera/photo permission strings configured in `app.json`.
 
 **Track B — AI + Results UI** (done)
 - `services/openai.ts`, `constants/prompts.ts`, `constants/colors.ts`,
@@ -209,7 +223,8 @@ All app code lives under `food-scanner/src/`. Work is split into two tracks
 - [x] Downgraded to Expo SDK 54 (matches Expo Go)
 - [x] `expo-image-picker` + `react-native-svg` installed
 - [x] **Track B done:** OpenAI service, prompt, colors, result screen + components
-- [ ] **Track A:** Home screen rewrite (`src/app/index.tsx`) — camera/picker + navigate to result
+- [x] **Track A done:** camera/library scan screen, navigates to result
+- [x] Ingredient vs dish classification (dish → ingredients, ingredient → recipes)
 - [ ] Rotate the OpenAI API key (was shared in chat)
 - [ ] End-to-end test: photo → real API call → result screen
 - [ ] Demo walkthrough rehearsed
